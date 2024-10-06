@@ -1,10 +1,17 @@
 import { Router } from "express";
+import path from "node:path";
 
 import { Film, NewFilm } from "../types";
 
+import { containsOnlyExpectedKeys } from "../utils/validate";
+
+import { serialize, parse } from "../utils/json";
+
 const router = Router();
 
-const films: Film[] = [
+const jsonDbPath = path.join(__dirname, "/../data/films.json");
+
+const defaultFilms: Film[] = [
   {
     id: 1,
     title: "Shang-Chi and the Legend of the Ten Rings",
@@ -61,16 +68,27 @@ const films: Film[] = [
   },
 ];
 
+const expectedKeys = [
+  "title",
+  "director",
+  "duration",
+  "budget",
+  "description",
+  "imageUrl",
+];
+
 // Read all films, filtered by minimum-duration if the query param exists
 router.get("/", (req, res) => {
-  if (!req.query["minimum-duration"]) {
-    return res.json(films);
+  const films = parse(jsonDbPath, defaultFilms);
+
+  if (req.query["minimum-duration"] === undefined) {
+    return res.send(films);
   }
 
   const minDuration = Number(req.query["minimum-duration"]);
 
   if (isNaN(minDuration) || minDuration <= 0) {
-    return res.sendStatus(400); 
+    return res.sendStatus(400);
   }
 
   const filteredFilms = films.filter((film) => film.duration >= minDuration);
@@ -83,13 +101,15 @@ router.get("/:id", (req, res) => {
   const id = Number(req.params.id);
 
   if (isNaN(id)) {
-    return res.sendStatus(400); 
+    return res.sendStatus(400);
   }
+
+  const films = parse(jsonDbPath, defaultFilms);
 
   const film = films.find((film) => film.id === id);
 
   if (film === undefined) {
-    return res.sendStatus(40); 
+    return res.sendStatus(404);
   }
 
   return res.send(film);
@@ -118,26 +138,28 @@ router.post("/", (req, res) => {
     ("imageUrl" in body &&
       (typeof body.imageUrl !== "string" || !body.imageUrl.trim()))
   ) {
-    return res.sendStatus(400); 
+    return res.sendStatus(400);
   }
 
-  // Challenge : To be complete, we should check that the keys of the body object are only the ones we expect
-  const expectedKeys = [
-    "title",
-    "director",
-    "duration",
-    "budget",
-    "description",
-    "imageUrl",
-  ];
-  const bodyKeys = Object.keys(body);
-  const extraKeys = bodyKeys.filter((key) => !expectedKeys.includes(key));
-  if (extraKeys.length > 0) {
-    return res.json("Extra keys in body: " + extraKeys.join(", "));
+  // Challenge of ex1.4 : To be complete, we should check that the keys of the body object are only the ones we expect
+  if (!containsOnlyExpectedKeys(body, expectedKeys)) {
+    return res.sendStatus(400);
   }
   // End of challenge
 
   const newFilm = body as NewFilm;
+
+  const films = parse(jsonDbPath, defaultFilms);
+
+  const existingFilm = films.find(
+    (film) =>
+      film.title.toLowerCase() === newFilm.title.toLowerCase() &&
+      film.director.toLowerCase() === newFilm.director.toLowerCase()
+  );
+
+  if (existingFilm) {
+    return res.sendStatus(409);
+  }
 
   const nextId =
     films.reduce((acc, film) => (film.id > acc ? film.id : acc), 0) + 1;
@@ -146,42 +168,49 @@ router.post("/", (req, res) => {
 
   films.push(addedFilm);
 
+  serialize(jsonDbPath, films);
+
   return res.json(addedFilm);
 });
 
-
-
+// Delete a film by id
 router.delete("/:id", (req, res) => {
   const id = Number(req.params.id);
 
-  if(isNaN(id)){
+  if (isNaN(id)) {
     return res.sendStatus(400);
   }
-  
+
+  const films = parse(jsonDbPath, defaultFilms);
+
   const index = films.findIndex((film) => film.id === id);
+
   if (index === -1) {
     return res.sendStatus(404);
   }
 
   const deletedFilm = films[index];
-  
 
   films.splice(index, 1);
-  ; // splice() returns an array of the deleted elements
+
+  serialize(jsonDbPath, films);
+
   return res.send(deletedFilm);
 });
 
-
+// Update on or multiple props of a film
 router.patch("/:id", (req, res) => {
-
   const id = Number(req.params.id);
 
-  if(isNaN(id)){
+  if (isNaN(id)) {
     return res.sendStatus(400);
   }
 
-  const filmToUpdate = films.find((film) => film.id === id);
-  if (!filmToUpdate) {
+  const films = parse(jsonDbPath, defaultFilms);
+
+  const indexOfFilmToUpdate = films.findIndex((film) => film.id === id);
+
+  if (indexOfFilmToUpdate < 0) {
     return res.sendStatus(404);
   }
 
@@ -207,20 +236,25 @@ router.patch("/:id", (req, res) => {
     return res.sendStatus(400);
   }
 
-
+  // Challenge of ex1.6 : To be complete, we should check that the keys of the body object are only the ones we expect
+  if (!containsOnlyExpectedKeys(body, expectedKeys)) {
+    return res.sendStatus(400);
+  }
   // End of challenge
 
-  const updatedFilm = { ...filmToUpdate, ...body };
+  const updatedFilm = { ...films[indexOfFilmToUpdate], ...body };
 
-  films[films.indexOf(filmToUpdate)] = updatedFilm;
+  films[indexOfFilmToUpdate] = updatedFilm;
+
+  serialize(jsonDbPath, films);
 
   return res.send(updatedFilm);
 });
 
 // Update a film only if all properties are given or create it if it does not exist and the id is not existant
 router.put("/:id", (req, res) => {
-  
-  const body : unknown = req.body;
+  const body: unknown = req.body;
+
   if (
     !body ||
     typeof body !== "object" ||
@@ -243,12 +277,18 @@ router.put("/:id", (req, res) => {
     return res.sendStatus(400);
   }
 
- 
+  // Challenge of ex1.6 : To be complete, we should check that the keys of the body object are only the ones we expect
+  if (!containsOnlyExpectedKeys(body, expectedKeys)) {
+    return res.sendStatus(400);
+  }
+
   const id = Number(req.params.id);
 
   if (isNaN(id)) {
     return res.sendStatus(400);
   }
+
+  const films = parse(jsonDbPath, defaultFilms);
 
   const indexOfFilmToUpdate = films.findIndex((film) => film.id === id);
   // Deal with the film creation if it does not exist
@@ -274,6 +314,8 @@ router.put("/:id", (req, res) => {
 
     films.push(addedFilm);
 
+    serialize(jsonDbPath, films);
+
     return res.json(addedFilm);
   }
 
@@ -282,10 +324,9 @@ router.put("/:id", (req, res) => {
 
   films[indexOfFilmToUpdate] = updatedFilm;
 
+  serialize(jsonDbPath, films);
+
   return res.send(updatedFilm);
 });
-
-
-
 
 export default router;
