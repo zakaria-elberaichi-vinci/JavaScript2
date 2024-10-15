@@ -1,22 +1,28 @@
+
 import "./App.css";
-import sound from "./assets/sounds/Infecticide-11-Pizza-Spinoza.mp3"
+import sound from "./assets/sounds/Infecticide-11-Pizza-Spinoza.mp3";
 import logo from "./assets/images/js-logo.png";
-import pizzaBackground from "./assets/images/pizza.jpg";
 
 function App() {
   return (
     <div className="page">
-      <Header/>
+      <Header title="We love Pizza" version={0 + 1} />
       <Main />
       <Footer />
     </div>
   );
 }
 
-const Header = () => {
+interface HeaderProps {
+  title: string;
+  version: number;
+}
+
+const Header = (props: HeaderProps) => {
   return (
     <header>
-      <h1 className="animate__animated animate__bounce">We love Pizza</h1>
+      <h1 className="animate__animated animate__bounce">{props.title}</h1>
+      <h4>Version: {props.version}</h4>
     </header>
   );
 };
