@@ -1,0 +1,24 @@
+.UserName {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    color: #333;
+}
+
+.age {
+    font-size: 18px; /* Taille de police plus petite que le nom */
+    color: #666; /* Couleur plus claire */
+    text-align: center; /* Centré en dessous du nom */
+    margin-top: 5px; /* Un petit espace au-dessus de l'âge */
+}
+
+
+.online {
+    color: green; /* Le texte sera vert si l'utilisateur est en ligne */
+    font-weight: bold; /* Facultatif : pour mettre en évidence */
+}
+
+.offline {
+    color: red; /* Le texte sera rouge si l'utilisateur est hors ligne */
+    font-weight: bold; /* Facultatif : pour mettre en évidence */
+}
