@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
 import './ClickCounter.css';
+import { useState } from 'react';
 
 interface ClickCounterProps{
 title : string;
@@ -9,8 +9,7 @@ onMouseOverMessage ?: string;
 }
 
 const ClickCounter = 
-({title,on10ClickMessage , 
-  onMouseOverMessage } : ClickCounterProps) => {
+({title,on10ClickMessage ,onMouseOverMessage } : ClickCounterProps) => {
 
   const [count, setCount] =useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -19,6 +18,7 @@ const ClickCounter =
     <div className="card">
       <h4>{title}</h4>
       {isHovered ? <p>{onMouseOverMessage}</p> : null}
+      
     <button 
     onClick={() => setCount((count) => count + 1)}
     onMouseEnter={ () => setIsHovered(true)}
