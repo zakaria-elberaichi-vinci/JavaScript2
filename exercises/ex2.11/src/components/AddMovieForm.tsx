@@ -16,7 +16,7 @@ const AddMovieForm = ({ onMovieAdded }: AddMovieFormProps) => {
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
-    onMovieAdded({title, director, duration, imageUrl, description, budget });
+    onMovieAdded({ title, director, duration, imageUrl, description, budget });
     setTitle("");
     setDirector("");
     setDuration(0);
@@ -25,12 +25,14 @@ const AddMovieForm = ({ onMovieAdded }: AddMovieFormProps) => {
     setBudget(0);
   };
   return (
-  <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit}>
       <div>
-        <label>Title : </label>
-        <input type="text"
-        value={title}
-        onChange={(e)=> setTitle (e.target.value)}
+        <label>Titre :</label>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
         />
       </div>
       <div>

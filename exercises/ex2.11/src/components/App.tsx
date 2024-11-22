@@ -6,10 +6,8 @@ import NavBar from "./Navbar";
 import { useState } from "react";
 import { Movie, MovieContext } from "../types";
 
-
 const defaultMovies: Movie[] = [
   {
-    id:1,
     title: "Shang-Chi and the Legend of the Ten Rings",
     director: "Destin Daniel Cretton",
     duration: 132,
@@ -20,7 +18,6 @@ const defaultMovies: Movie[] = [
     budget: 150,
   },
   {
-    id : 2,
     title: "The Matrix",
     director: "Lana Wachowski, Lilly Wachowski",
     duration: 136,
@@ -30,7 +27,7 @@ const defaultMovies: Movie[] = [
       "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.",
     budget: 63,
   },
-  { id : 3,
+  {
     title: "Summer Wars",
     director: "Mamoru Hosoda",
     duration: 114,
@@ -41,7 +38,6 @@ const defaultMovies: Movie[] = [
     budget: 18.7,
   },
   {
-    id : 4,
     title: "The Meyerowitz Stories",
     director: "Noah Baumbach",
     duration: 112,
@@ -51,7 +47,6 @@ const defaultMovies: Movie[] = [
       "An estranged family gathers together in New York City for an event celebrating the artistic work of their father.",
   },
   {
-    id : 5,
     title: "her",
     director: "Spike Jonze",
     duration: 126,
@@ -64,20 +59,19 @@ const defaultMovies: Movie[] = [
 ];
 
 const App = () => {
-
-   const [movies, setMovies] = useState(defaultMovies);
+  const [movies, setMovies] = useState(defaultMovies);
   const navigate = useNavigate();
 
   const onMovieAdded = (newMovie: Movie) => {
-    setMovies([...movies,newMovie]);
+    console.log("Movie to add:", newMovie);
+    setMovies([...movies, newMovie]);
     navigate("/movie-list");
   };
 
-  const movieContext: MovieContext = {   //C'est commme si c'était un props pour toute l'application que chacun des composants pourra récupérer a sa guise 
-  movies,
-  onMovieAdded,
+  const movieContext: MovieContext = {
+    movies,
+    onMovieAdded,
   };
-
 
   return (
     <div>
