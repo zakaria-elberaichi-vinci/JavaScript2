@@ -11,25 +11,27 @@ function App() {
 
   const [joke,setJoke] = useState<Joke |undefined>(undefined);
 
-  useEffect(() => {
+  const fetchJoke = () => {
     fetch("https://v2.jokeapi.dev/joke/Any?type=single")
       .then((response) => {
-        if (!response.ok)
-          throw new Error(
-            `fetch error : ${response.status} : ${response.statusText}`
-          );
         return response.json();
       })
-      .then((data) => setJoke(data))
-      .catch((err) => {
-        console.error("HomePage::error: ", err);
+      .then((data) => {
+        setJoke({
+          joke: data.joke ?? "No joke found",
+          category: data.category ?? "Unknown",
+        });
       });
+  };
+
+  useEffect(() => {
+    fetchJoke();
+    setInterval(fetchJoke, 10000);
   }, []);
 
-  if(!joke) {
-    return <p>Loading ...</p>
+  if (!joke) {
+    return <p>Loading...</p>;
   }
-
   return (
       <>
       <p>The joke's category is {joke.category}</p>
