@@ -7,7 +7,7 @@ import {
   readAllPizzas,
   readPizzaById,
   updatePizza,
-} from "../services/pizzas";
+} from"../services/pizza;
 
 const router = Router();
 
